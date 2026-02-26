@@ -22,7 +22,8 @@ class DriverController extends Controller
             'cnh_category' => 'required|in:A,B,C,D,E',
             'phone'        => 'nullable|string|max:20',
         ]);
-
+        
+        $validated['is_active'] = true;
         $driver = Driver::create($validated);
         return response()->json($driver, 201);
     }
