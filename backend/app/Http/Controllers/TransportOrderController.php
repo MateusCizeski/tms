@@ -53,9 +53,11 @@ class TransportOrderController extends Controller
         ]);
 
         $validated['order_number'] = $this->generateOrderNumber();
+        $validated['status']       = 'pending';
 
         $order = TransportOrder::create($validated);
         $order->load('driver');
+        $order->refresh();
 
         return response()->json($order, 201);
     }

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 const links = [
   { to: "/", label: "Dashboard", icon: "📊" },
@@ -9,6 +10,13 @@ const links = [
 
 export function Sidebar() {
   const [open, setOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    await logout();
+    navigate("/login");
+  }
 
   return (
     <>
@@ -58,6 +66,18 @@ export function Sidebar() {
             </NavLink>
           ))}
         </nav>
+
+        <div className="px-3 py-4 border-t border-gray-700">
+          <p className="text-xs text-gray-400 px-4 mb-2 truncate">
+            {user?.name}
+          </p>
+          <button
+            onClick={handleLogout}
+            className="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:bg-gray-800 transition"
+          >
+            <span>🚪</span> Sair
+          </button>
+        </div>
       </aside>
     </>
   );
