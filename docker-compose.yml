@@ -1,5 +1,4 @@
-# docker-compose.yml (raiz do projeto)
-version: '3.8'
+version: "3.8"
 
 services:
   mysql:
@@ -17,6 +16,13 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - tms_network
+    healthcheck:
+      test:
+        ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   backend:
     build:
@@ -28,21 +34,32 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_DATABASE=tms_db
-      - DB_USERNAME=tms_user
-      - DB_PASSWORD=tms_password
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      APP_KEY: base64:2fl+DSBnkpnv2WDQhFwGQvjPPkOWGhFoSqFy3l8ABXY=
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: tms_db
+      DB_USERNAME: tms_user
+      DB_PASSWORD: tms_password
+      FRONTEND_URL: http://localhost:5173
     volumes:
       - ./backend:/var/www
+      - backend_vendor:/var/www/vendor
     networks:
       - tms_network
     command: >
-      sh -c "composer install &&
-             php artisan migrate --seed &&
-             php artisan serve --host=0.0.0.0 --port=8000"
+      sh -c "
+        composer install --no-interaction --prefer-dist &&
+        php artisan key:generate --no-interaction 2>/dev/null || true &&
+        php artisan migrate --force --seed &&
+        php artisan serve --host=0.0.0.0 --port=8000
+      "
 
   frontend:
     build:
@@ -61,6 +78,7 @@ services:
 
 volumes:
   mysql_data:
+  backend_vendor:
 
 networks:
   tms_network:
