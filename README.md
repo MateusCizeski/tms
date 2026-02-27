@@ -1,6 +1,6 @@
 # 🚛 TMS — Sistema de Gestão de Transporte
 
-Aplicação web full-stack para gerenciamento de Ordens de Coleta e Entrega (OCEs), motoristas e rotas. 
+Aplicação web full-stack para gerenciamento de Ordens de Coleta e Entrega (OCEs), motoristas e rotas.
 
 ---
 
@@ -13,8 +13,8 @@ Aplicação web full-stack para gerenciamento de Ordens de Coleta e Entrega (OCE
 | Frontend  | Tailwind CSS            | 3.x     |
 | Frontend  | React Hook Form + Zod   | —       |
 | Frontend  | React Router DOM        | 6.x     |
-| Backend   | Laravel                 | 11.x    |
-| Backend   | PHP                     | 8.2     |
+| Backend   | Laravel                 | 12.x    |
+| Backend   | PHP                     | 8.4     |
 | Backend   | Laravel Sanctum         | 4.x     |
 | Banco     | MySQL                   | 8.0     |
 | Infra     | Docker + Docker Compose | —       |
@@ -24,8 +24,12 @@ Aplicação web full-stack para gerenciamento de Ordens de Coleta e Entrega (OCE
 ## 📁 Estrutura do Projeto
 ```
 tms/
-├── backend/          # API Laravel
-├── frontend/         # SPA React
+├── backend/              # API Laravel
+│   ├── .env.docker       # Env usado pelo Docker (já configurado)
+│   ├── .env.example      # Env para rodar localmente
+│   └── Dockerfile
+├── frontend/             # SPA React
+│   └── Dockerfile
 ├── docker-compose.yml
 └── README.md
 ```
@@ -33,6 +37,8 @@ tms/
 ---
 
 ## 🚀 Opção 1 — Rodando com Docker (recomendado)
+
+Não requer MySQL instalado. O Docker sobe tudo isolado e automaticamente.
 
 ### Pré-requisitos
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado e rodando
@@ -45,26 +51,21 @@ git clone https://github.com/MateusCizeski/tms
 cd tms
 ```
 
-**2. Configure o `.env` do backend:**
-```bash
-cp backend/.env.example backend/.env
-```
-
-**3. Suba o ambiente:**
+**2. Suba o ambiente:**
 ```bash
 docker compose up --build
 ```
 
 O Docker irá automaticamente:
-- Subir o banco MySQL e aguardar ele ficar saudável
+- Criar um banco MySQL isolado
 - Instalar as dependências PHP via Composer
 - Executar as migrations e popular o banco com dados de exemplo
 - Iniciar o backend em `http://localhost:8000`
-- Instalar as dependências Node e iniciar o frontend em `http://localhost:5173`
+- Iniciar o frontend em `http://localhost:5173`
 
-> ⏳ Na primeira execução aguarde cerca de 1-2 minutos até tudo estar pronto.
+> ⏳ Na primeira execução aguarde cerca de 2-3 minutos até tudo estar pronto.
 
-**4. Acesse a aplicação:**
+**3. Acesse a aplicação:**
 - Frontend: http://localhost:5173
 - API: http://localhost:8000/api/v1
 
@@ -89,7 +90,7 @@ docker compose down -v
 ## 💻 Opção 2 — Rodando Localmente
 
 ### Pré-requisitos
-- PHP 8.2+
+- PHP 8.4+
 - Composer
 - Node.js 20+
 - MySQL 8.0 rodando localmente
@@ -105,15 +106,14 @@ composer install
 **2. Configure o ambiente:**
 ```bash
 cp .env.example .env
-php artisan key:generate
 ```
 
-**3. Edite o `.env` com suas credenciais MySQL locais:**
+**3. Edite o `.env` com suas credenciais MySQL:**
 ```env
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=tms_db
-DB_USERNAME=seu_usuario
+DB_USERNAME=root
 DB_PASSWORD=sua_senha
 ```
 
@@ -137,7 +137,7 @@ API disponível em: http://localhost:8000
 
 ### Frontend (React)
 
-**1. Em outro terminal, entre na pasta e instale as dependências:**
+**1. Em outro terminal, entre na pasta:**
 ```bash
 cd frontend
 npm install
@@ -148,9 +148,7 @@ npm install
 cp .env.example .env
 ```
 
-O `.env.example` já aponta para `http://localhost:8000/api/v1`, então não precisa alterar nada.
-
-**3. Inicie o servidor de desenvolvimento:**
+**3. Inicie o servidor:**
 ```bash
 npm run dev
 ```
@@ -169,9 +167,7 @@ Senha:  password
 Os testes usam SQLite in-memory e não afetam o banco de dados da aplicação.
 
 ### Pré-requisito
-Certifique-se que a extensão `pdo_sqlite` está habilitada no seu `php.ini`.
-
-### Executar todos os testes
+A extensão `pdo_sqlite` deve estar habilitada no `php.ini`.
 ```bash
 cd backend
 php artisan test
@@ -179,9 +175,9 @@ php artisan test
 
 ### Resultado esperado
 ```
-PASS  Tests\Unit\ExampleTest        (1 teste)
-PASS  Tests\Feature\AuthTest        (4 testes)
-PASS  Tests\Feature\DriverTest      (7 testes)
+PASS  Tests\Unit\ExampleTest           (1 teste)
+PASS  Tests\Feature\AuthTest           (4 testes)
+PASS  Tests\Feature\DriverTest         (7 testes)
 PASS  Tests\Feature\TransportOrderTest (14 testes)
 
 Tests: 26 passed
@@ -191,23 +187,19 @@ Tests: 26 passed
 
 ## 🔑 Variáveis de Ambiente
 
-### `backend/.env.example`
+### `backend/.env.example` — para rodar localmente
 ```env
-APP_NAME=TMS
-APP_ENV=local
-APP_KEY=
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=tms_db
 DB_USERNAME=root
-DB_PASSWORD=
-
+DB_PASSWORD=          # sua senha local
 FRONTEND_URL=http://localhost:5173
 ```
+
+### `backend/.env.docker` — usado automaticamente pelo Docker
+Já está configurado e commitado. Não é necessário editar.
 
 ### `frontend/.env.example`
 ```env
@@ -223,7 +215,7 @@ VITE_API_URL=http://localhost:8000/api/v1
 - Tabela com as últimas 10 ordens cadastradas
 
 ### Motoristas
-- Listagem com todas as informações
+- Listagem completa com todas as informações
 - Cadastro e edição via modal
 - Inativar/ativar com confirmação
 
@@ -255,26 +247,26 @@ VITE_API_URL=http://localhost:8000/api/v1
 ## 📡 Endpoints da API
 
 ### Autenticação
-| Método | Endpoint       | Descrição       |
-|--------|----------------|-----------------|
-| POST   | /api/v1/login  | Login           |
-| POST   | /api/v1/logout | Logout          |
-| GET    | /api/v1/me     | Usuário logado  |
+| Método | Endpoint        | Descrição      |
+|--------|-----------------|----------------|
+| POST   | /api/v1/login   | Login          |
+| POST   | /api/v1/logout  | Logout         |
+| GET    | /api/v1/me      | Usuário logado |
 
 ### Motoristas
-| Método | Endpoint                           | Descrição            |
-|--------|------------------------------------|----------------------|
-| GET    | /api/v1/drivers                    | Listar motoristas    |
-| POST   | /api/v1/drivers                    | Criar motorista      |
-| PUT    | /api/v1/drivers/{id}               | Editar motorista     |
-| PATCH  | /api/v1/drivers/{id}/toggle-active | Inativar/ativar      |
+| Método | Endpoint                            | Descrição          |
+|--------|-------------------------------------|--------------------|
+| GET    | /api/v1/drivers                     | Listar motoristas  |
+| POST   | /api/v1/drivers                     | Criar motorista    |
+| PUT    | /api/v1/drivers/{id}                | Editar motorista   |
+| PATCH  | /api/v1/drivers/{id}/toggle-active  | Inativar/ativar    |
 
 ### Ordens de Transporte
-| Método | Endpoint                                  | Descrição            |
-|--------|-------------------------------------------|----------------------|
-| GET    | /api/v1/transport-orders                  | Listar ordens        |
-| POST   | /api/v1/transport-orders                  | Criar ordem          |
-| PUT    | /api/v1/transport-orders/{id}             | Editar ordem         |
-| PATCH  | /api/v1/transport-orders/{id}/advance     | Avançar status       |
-| DELETE | /api/v1/transport-orders/{id}             | Excluir ordem        |
-| GET    | /api/v1/dashboard                         | Dados do dashboard   |
+| Método | Endpoint                               | Descrição        |
+|--------|----------------------------------------|------------------|
+| GET    | /api/v1/transport-orders               | Listar ordens    |
+| POST   | /api/v1/transport-orders               | Criar ordem      |
+| PUT    | /api/v1/transport-orders/{id}          | Editar ordem     |
+| PATCH  | /api/v1/transport-orders/{id}/advance  | Avançar status   |
+| DELETE | /api/v1/transport-orders/{id}          | Excluir ordem    |
+| GET    | /api/v1/dashboard                      | Dados dashboard  |
